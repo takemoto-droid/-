@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f1f5f9">
+<title>デイリー教養バトル</title>
+<style>
+  :root{
+    --bg:#f1f5f9; --card:#ffffff; --card2:#f1f5f9;
+    --acc:#2563eb; --acc2:#b45309; --ok:#16a34a; --ng:#dc2626;
+    --txt:#1e293b; --sub:#475569;
+    --border:#cbd5e1; --ok-bg:#dcfce7; --ng-bg:#fee2e2; --me-bg:#dbeafe;
+    --btn-txt:#ffffff; --shadow:0 2px 10px rgba(15,23,42,.08);
+    --chart-fill:rgba(37,99,235,.18);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    background:var(--bg); color:var(--txt); min-height:100vh; display:flex; justify-content:center;}
+  #app{width:100%; max-width:520px; padding:16px;}
+  .card{background:var(--card); border-radius:16px; padding:20px; margin-bottom:14px;
+    box-shadow:var(--shadow); border:1px solid #e2e8f0;}
+  h1{font-size:20px; text-align:center; margin-bottom:4px; color:var(--acc);}
+  .sub{color:var(--sub); font-size:12px; text-align:center; margin-bottom:14px;}
+  .btn{display:block; width:100%; padding:14px; margin-top:10px; border:none; border-radius:12px;
+    background:var(--acc); color:var(--btn-txt); font-size:16px; font-weight:bold; cursor:pointer;}
+  .btn:active{transform:scale(.98);}
+  .btn:disabled{opacity:.5; cursor:default;}
+  .btn.ghost{background:var(--card2); color:var(--txt); font-weight:normal;}
+  .btn.small{padding:9px; font-size:13px; margin-top:6px;}
+  input[type=text], select{width:100%; padding:12px; border-radius:10px; border:1px solid var(--border);
+    background:var(--card2); color:var(--txt); font-size:16px; margin-top:8px;}
+  label{font-size:13px; color:var(--sub); display:block; margin-top:12px;}
+  .tag{display:inline-block; font-size:11px; padding:3px 10px; border-radius:99px;
+    background:var(--card2); color:var(--acc); margin-right:6px;}
+  .stars{color:var(--acc2); font-size:12px;}
+  .qtext{font-size:16px; line-height:1.7; margin:14px 0;}
+  .passage{background:var(--card2); border-left:4px solid var(--acc); border-radius:8px;
+    padding:12px; font-size:14px; line-height:1.8; margin:12px 0;}
+  .passage table.ptable{width:100%; border-collapse:collapse; background:var(--card);
+    font-size:13px; margin:8px 0; border:1px solid var(--border);}
+  .passage .ptable th,.passage .ptable td{border:1px solid var(--border); padding:6px 8px; text-align:center;}
+  .passage .ptable th{background:var(--me-bg); color:var(--txt); font-weight:bold; font-size:12px;}
+  .choice{display:block; width:100%; text-align:left; padding:13px 14px; margin-top:8px;
+    border:1px solid var(--border); border-radius:12px; background:var(--card2); color:var(--txt);
+    font-size:15px; cursor:pointer; line-height:1.5;}
+  .choice.sel-ok{background:var(--ok-bg); border:2px solid var(--ok);}
+  .choice.sel-ng{background:var(--ng-bg); border:2px solid var(--ng);}
+  .choice.reveal{border-color:var(--ok);}
+  .choice:disabled{cursor:default; opacity:.9;}
+  .bar{height:8px; background:var(--card2); border-radius:99px; overflow:hidden; margin:10px 0 4px;}
+  .bar>div{height:100%; background:var(--acc); transition:width .2s linear;}
+  .bar>div.warn{background:var(--ng);}
+  .row{display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--sub);}
+  .fb{margin-top:12px; padding:12px; border-radius:10px; font-size:14px; line-height:1.7; display:none;}
+  .fb.ok{background:var(--ok-bg); border-left:4px solid var(--ok); display:block;}
+  .fb.ng{background:var(--ng-bg); border-left:4px solid var(--ng); display:block;}
+  .fb.wait{background:var(--card2); display:block; color:var(--sub);}
+  .big{font-size:44px; font-weight:bold; text-align:center; color:var(--acc2);}
+  .center{text-align:center;}
+  .err{color:var(--ng); font-size:13px; margin-top:8px; display:none;}
+  table{width:100%; border-collapse:collapse; font-size:13px; margin-top:8px;}
+  th,td{padding:8px 6px; text-align:left; border-bottom:1px solid var(--border);}
+  th{color:var(--sub); font-weight:normal; font-size:11px;}
+  tr.me{background:var(--me-bg); color:var(--txt); font-weight:bold;}
+  tr.refrow{color:var(--acc2); font-style:italic;}
+  .tabs{display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;}
+  .tab{flex:1; padding:9px 4px; border:none; border-radius:10px; background:var(--card2);
+    color:var(--sub); font-size:13px; cursor:pointer; min-width:70px;}
+  .tab.on{background:var(--acc); color:var(--btn-txt); font-weight:bold;}
+  h2{font-size:15px; margin-bottom:6px; color:var(--acc);}
+  .note{font-size:11px; color:var(--sub); margin-top:8px; line-height:1.6;}
+  canvas{display:block; margin:0 auto;}
+  .badge{display:inline-block; background:#fef3c7; color:#92400e; font-size:12px;
+    font-weight:bold; padding:4px 12px; border-radius:99px; margin-top:6px;}
+  .rulebox{background:var(--card2); border-radius:10px; padding:12px; margin-top:12px;
+    font-size:13px; line-height:1.9;}
+  .rulebox b{color:var(--acc2);}
+  .qa{display:flex; flex-direction:column;}
+  .myrank{display:flex; gap:8px; margin:10px 0;}
+  .myrank>div{flex:1; background:var(--card2); border-radius:10px; padding:10px 6px; text-align:center;}
+  .myrank .num{font-size:20px; font-weight:bold; color:var(--acc2);}
+  .myrank .lbl{font-size:11px; color:var(--sub);}
+  .daylist{display:flex; flex-direction:column; gap:6px; margin-top:8px;}
+  .daybtn{padding:11px 12px; border-radius:10px; border:1px solid var(--border); background:var(--card2);
+    color:var(--txt); text-align:left; font-size:14px; cursor:pointer; display:flex; justify-content:space-between;}
+  .daybtn.on{border-color:var(--acc); background:var(--me-bg);}
+  .daybtn:disabled{opacity:.55; cursor:default;}
+  .daybtn .st{font-size:11px; color:var(--sub);}
+  .overlay{position:fixed; inset:0; background:rgba(15,23,42,.45); display:flex; align-items:center;
+    justify-content:center; z-index:50; padding:16px;}
+  .navrow{display:flex; gap:8px; margin-top:8px;}
+  .navrow .btn{margin-top:0;}
+  .loading{text-align:center; color:var(--sub); padding:20px; font-size:14px;}
+  .btn:focus-visible,.choice:focus-visible,.tab:focus-visible{outline:2px solid var(--acc); outline-offset:2px;}
+  /* iPad幅以上: 問題文を左・選択肢を右の2カラム。スマホでは縦積みのまま */
+  @media(min-width:768px){
+    #app{max-width:960px;}
+    .qa{flex-direction:row; gap:24px; align-items:flex-start;}
+    .qleft{flex:1.1;}
+    .qright{flex:1;}
+    .qright .choice:first-child{margin-top:0;}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+
+/* ================= 状態 ================= */
+var me = null;            // {id, displayName, nickname, class, course, role}
+var settings = null;      // {pt_1,pt_2,pt_3,join_bonus,makeup_days,demo_mode}
+var todayStr = null;
+var availableDates = [];
+var quizQuestions = [];   // getQuizの戻り値
+var quizTargetDate = null;
+var quizIsMakeup = false;
+var idx = 0, timer = null, timeLeft = 0, qStartMs = 0;
+var lastResult = null;    // finishQuiz結果
+var lastResultsData = null; // getResults結果
+var prefetchQuiz = null;  // P8: {date, promise状態} 当日クイズの先読み結果保持
+var app = document.getElementById("app");
+
+function run(fnName, args, onSuccess, onError){
+  google.script.run
+    .withSuccessHandler(onSuccess)
+    .withFailureHandler(onError || function(err){ alert("通信エラー: " + err); })[fnName].apply(null, args || []);
+}
+
+/* ================= 画面: スタート(ID入力) ================= */
+function renderStart(prefillId, errMsg){
+  app.innerHTML =
+   '<div class="card">' +
+     '<h1>🧠 デイリー教養バトル</h1>' +
+     '<div class="sub">高2学年 毎日8問（基本トレ5問＋速読チャレンジ3問）・目安5〜10分</div>' +
+     '<label>生徒ID（例: H2704）／教員ID</label>' +
+     '<input type="text" id="sid" maxlength="8" autocapitalize="characters" value="' + (prefillId||"") + '" placeholder="H2704">' +
+     '<div class="err" id="sidErr" style="' + (errMsg?"display:block":"") + '">' + (errMsg||"") + '</div>' +
+     '<button class="btn" id="btnCheck">IDを確認する</button>' +
+     '<div class="rulebox">' +
+       '<b>🏆 得点ルール</b><br>' +
+       '・配点: ★1＝10点／★2＝15点／★3＝25点（難易度により変動）<br>' +
+       '・最後まで解くと <b>参加ボーナス</b> がもらえます<br>' +
+       '・制限時間は問題ごとに設定（画面上のバーで残り時間を確認）。時間切れは不正解で自動送り<br>' +
+       '・後半3問の「速読チャレンジ」は同じ文章・資料で3問。1問目に読む時間を多めに配分<br>' +
+       '・同点のときは合計回答時間が短い人が上位<br>' +
+       '・<b>さかのぼり回答</b>（過去分）はランキング対象外。ただし参加日数と教養レーダーには反映' +
+     '</div>' +
+     '<div class="note">回答は自動でスプレッドシートに記録され、翌朝ランキングが発表されます。</div>' +
+   '</div>';
+  document.getElementById("btnCheck").onclick = checkId;
+  document.getElementById("sid").addEventListener("keydown", function(e){ if(e.key === "Enter") checkId(); });
+  document.getElementById("sid").focus();
+}
+
+function checkId(){
+  var idInput = document.getElementById("sid");
+  var id = idInput.value.trim().toUpperCase();
+  if(!id) return;
+  var btn = document.getElementById("btnCheck");
+  btn.disabled = true; btn.textContent = "確認中…";
+  run("getBootstrap", [id], function(res){
+    btn.disabled = false; btn.textContent = "IDを確認する";
+    if(!res.ok){
+      renderStart(id, res.error);
+      return;
+    }
+    me = res.student;
+    settings = res.settings;
+    todayStr = res.today;
+    availableDates = res.availableDates;
+    if(res.isFirstLogin){
+      renderNicknameDialog(function(){ renderDaySelect(); });
+    } else {
+      renderDaySelect();
+    }
+  }, function(err){
+    btn.disabled = false; btn.textContent = "IDを確認する";
+    renderStart(id, "通信エラー: " + err);
+  });
+}
+
+/* ================= 画面: ニックネーム登録（初回のみ） ================= */
+function renderNicknameDialog(onDone){
+  var ov = document.createElement("div");
+  ov.className = "overlay";
+  ov.innerHTML =
+   '<div class="card" style="max-width:400px;">' +
+     '<h2>ニックネームを決める（任意）</h2>' +
+     '<div class="note">最大10文字。ひらがな・カタカナ・漢字・英数字が使えます。あとからマイページで変更できます。スキップするとIDがそのまま表示名になります。</div>' +
+     '<input type="text" id="nick" maxlength="10" placeholder="例: たけし">' +
+     '<div class="err" id="nickErr"></div>' +
+     '<div class="navrow"><button class="btn ghost" id="btnSkip">スキップ</button>' +
+     '<button class="btn" id="btnSetNick">登録する</button></div>' +
+   '</div>';
+  document.body.appendChild(ov);
+  document.getElementById("btnSkip").onclick = function(){ document.body.removeChild(ov); onDone(); };
+  document.getElementById("btnSetNick").onclick = function(){
+    var nick = document.getElementById("nick").value.trim();
+    if(!nick){ document.body.removeChild(ov); onDone(); return; }
+    run("setNickname", [me.id, nick], function(res){
+      if(!res.ok){ document.getElementById("nickErr").textContent = res.error; document.getElementById("nickErr").style.display="block"; return; }
+      me.nickname = nick; me.displayName = res.displayName;
+      document.body.removeChild(ov);
+      onDone();
+    });
+  };
+}
+
+/* ================= 画面: 挑戦する日を選ぶ ================= */
+function renderDaySelect(){
+  var list = availableDates.map(function(d){
+    var disabled = !d.hasQuestions || (d.done && !settings.demo_mode);
+    var status = !d.hasQuestions ? "問題未配信" : (d.done ? (settings.demo_mode ? "回答済み(デモ:再挑戦可)" : "回答済み") : (d.isMakeup ? "さかのぼり" : "本日"));
+    return '<button class="daybtn' + (disabled?"":"") + '" data-date="' + d.date + '" ' + (disabled?"disabled":"") + '>' +
+      '<span>' + d.label + '</span><span class="st">' + status + '</span></button>';
+  }).join("");
+  app.innerHTML =
+   '<div class="card">' +
+     '<h1>🧠 デイリー教養バトル</h1>' +
+     '<div class="sub">' + me.displayName + '（' + (me.class?me.class+'組・':'') + (me.course||'コース未設定') + '）' + (me.role==='teacher'?' ／ 教員':'') + '</div>' +
+     '<label>挑戦する日</label>' +
+     '<div class="daylist" id="daylist">' + list + '</div>' +
+     '<div class="rulebox">' +
+       '<b>🏆 得点ルール</b><br>' +
+       '・配点: ★1＝' + settings.pt_1 + '点／★2＝' + settings.pt_2 + '点／★3＝' + settings.pt_3 + '点<br>' +
+       '・最後まで解くと <b>参加ボーナス +' + settings.join_bonus + '点</b><br>' +
+       '・同点のときは合計回答時間が短い人が上位<br>' +
+       '・<b>さかのぼり回答</b>はランキング対象外。ただし参加日数と教養レーダーには反映' +
+     '</div>' +
+     '<button class="btn ghost" id="btnMyPage">👤 マイページ（ニックネーム変更・推移）</button>' +
+     '<button class="btn ghost" id="btnRankOnly">📊 ランキングだけ見る</button>' +
+     '<button class="btn ghost" id="btnBackId">別のIDで入り直す</button>' +
+   '</div>';
+  Array.prototype.forEach.call(document.querySelectorAll(".daybtn"), function(b){
+    if(!b.disabled) b.onclick = function(){ startQuiz(b.getAttribute("data-date")); };
+  });
+  document.getElementById("btnMyPage").onclick = renderMyPage;
+  document.getElementById("btnRankOnly").onclick = function(){ renderRanking("daily"); };
+  document.getElementById("btnBackId").onclick = function(){ me=null; renderStart(); };
+
+  prefetchTodayQuiz();
+}
+
+/* P8: 当日クイズ先読み。「本日」該当かつ未回答の日があれば裏でgetQuizを先行発火 */
+function prefetchTodayQuiz(){
+  prefetchQuiz = null;
+  var todays = availableDates.filter(function(d){
+    return d.hasQuestions && !d.done && !d.isMakeup && d.date === todayStr;
+  });
+  if(!todays.length) return;
+  var date = todays[0].date;
+  var state = { date: date, status: "loading", data: null };
+  prefetchQuiz = state;
+  run("getQuiz", [me.id, date], function(res){
+    if(prefetchQuiz !== state) return; // 破棄済み（再描画等）なら無視
+    state.status = "done";
+    state.data = res;
+  }, function(){
+    if(prefetchQuiz !== state) return;
+    state.status = "error";
+  });
+}
+
+/* ================= 出題取得 ================= */
+function startQuiz(dateStr){
+  // P8: プリフェッチ済み・同一dateなら通信スキップで即遷移。一度使ったら破棄（二重利用防止）
+  if(prefetchQuiz && prefetchQuiz.date === dateStr && prefetchQuiz.status === "done"){
+    var pf = prefetchQuiz;
+    prefetchQuiz = null;
+    applyQuizResult(pf.data, dateStr);
+    return;
+  }
+  if(prefetchQuiz && prefetchQuiz.date === dateStr && prefetchQuiz.status === "loading"){
+    // まだ先読み中: 新規通信は発火せず、現行どおりローディング表示のまま先読み完了を待つ
+    app.innerHTML = '<div class="card loading">問題を読み込み中…</div>';
+    waitPrefetch(prefetchQuiz, dateStr);
+    return;
+  }
+  if(prefetchQuiz && prefetchQuiz.date === dateStr && prefetchQuiz.status === "error"){
+    prefetchQuiz = null; // 失敗時は現行フローにフォールバック
+  }
+  app.innerHTML = '<div class="card loading">問題を読み込み中…</div>';
+  run("getQuiz", [me.id, dateStr], function(res){
+    applyQuizResult(res, dateStr);
+  }, function(err){ alert("通信エラー: " + err); renderDaySelect(); });
+}
+
+/* P8: 先読み中の場合、完了 or 失敗をポーリングして待つ（新規通信は発火しない） */
+function waitPrefetch(state, dateStr){
+  if(prefetchQuiz !== state){
+    // 別の遷移等で破棄済み。フォールバックとして通常取得
+    app.innerHTML = '<div class="card loading">問題を読み込み中…</div>';
+    run("getQuiz", [me.id, dateStr], function(res){ applyQuizResult(res, dateStr); },
+      function(err){ alert("通信エラー: " + err); renderDaySelect(); });
+    return;
+  }
+  if(state.status === "loading"){
+    setTimeout(function(){ waitPrefetch(state, dateStr); }, 150);
+    return;
+  }
+  if(state.status === "done"){
+    prefetchQuiz = null;
+    applyQuizResult(state.data, dateStr);
+    return;
+  }
+  // error: フォールバックで通常取得
+  prefetchQuiz = null;
+  run("getQuiz", [me.id, dateStr], function(res){ applyQuizResult(res, dateStr); },
+    function(err){ alert("通信エラー: " + err); renderDaySelect(); });
+}
+
+function applyQuizResult(res, dateStr){
+  if(!res || !res.ok){ alert((res && res.error) || "通信エラー"); renderDaySelect(); return; }
+  quizQuestions = res.questions;
+  quizTargetDate = res.targetDate;
+  quizIsMakeup = res.isMakeup;
+  idx = 0;
+  renderQ();
+}
+
+/* ================= 画面: 出題 ================= */
+function renderQ(){
+  var q = quizQuestions[idx];
+  timeLeft = q.time_limit_sec || 60;
+  qStartMs = Date.now();
+  var stars = "★".repeat(q.difficulty) + "☆".repeat(3-q.difficulty);
+  var ptMap = {1:settings.pt_1, 2:settings.pt_2, 3:settings.pt_3};
+  app.innerHTML =
+   '<div class="card">' +
+     '<div class="row"><span>Q' + (idx+1) + ' / ' + quizQuestions.length + (quizIsMakeup?"（さかのぼり）":"") + '</span><span id="tl">' + timeLeft + '秒</span></div>' +
+     '<div class="bar"><div id="tbar" style="width:100%"></div></div>' +
+     '<div class="qa">' +
+       '<div class="qleft">' +
+         '<span class="tag">' + q.genre + '</span><span class="stars">' + stars + '（' + ptMap[q.difficulty] + '点）</span>' +
+         (q.passage ? '<div class="passage">' + passageToHtml(q.passage) + '</div>' : "") +
+         '<div class="qtext">' + escapeHtml(q.question_text).replace(/\n/g,"<br>") + '</div>' +
+       '</div>' +
+       '<div class="qright">' +
+         '<div id="choices">' + q.choices.map(function(c,i){
+           return '<button class="choice" data-i="' + i + '">' + ["①","②","③","④"][i] + " " + escapeHtml(c) + '</button>';
+         }).join("") + '</div>' +
+         '<div id="fb" class="fb"></div>' +
+       '</div>' +
+     '</div>' +
+   '</div>';
+  Array.prototype.forEach.call(document.querySelectorAll(".choice"), function(b){
+    b.onclick = function(){ answer(Number(b.getAttribute("data-i"))); };
+  });
+  var total = timeLeft;
+  timer = setInterval(function(){
+    timeLeft--;
+    document.getElementById("tl").textContent = timeLeft + "秒";
+    var bar = document.getElementById("tbar");
+    bar.style.width = (timeLeft/total*100) + "%";
+    if(timeLeft <= 10) bar.classList.add("warn");
+    if(timeLeft <= 0){ clearInterval(timer); answer(-1); }
+  }, 1000);
+}
+
+function answer(dispIdx){
+  clearInterval(timer);
+  var q = quizQuestions[idx];
+  var elapsed = Math.round((Date.now() - qStartMs)/1000);
+  var origIdx1based = dispIdx >= 0 ? (q.dispToOrig[dispIdx] + 1) : 0;
+
+  Array.prototype.forEach.call(document.querySelectorAll(".choice"), function(b){ b.disabled = true; });
+  var fb = document.getElementById("fb");
+  fb.className = "fb wait";
+  fb.innerHTML = "採点中…";
+
+  run("submitAnswer", [me.id, quizTargetDate, q.question_id, origIdx1based, elapsed], function(res){
+    if(!res.ok){ fb.className="fb ng"; fb.innerHTML = "エラー: " + res.error +
+      '<button class="btn" id="btnNext">次へ</button>'; document.getElementById("btnNext").onclick=next; return; }
+    var ok = res.correct;
+    Array.prototype.forEach.call(document.querySelectorAll(".choice"), function(b,i){
+      var orig = q.dispToOrig[i] + 1;
+      if(orig === res.answer) b.classList.add(i===dispIdx ? "sel-ok" : "reveal");
+      else if(i === dispIdx) b.classList.add("sel-ng");
+    });
+    fb.className = "fb " + (ok ? "ok" : "ng");
+    fb.innerHTML = (ok ? "⭕ 正解！ +" + res.point + "点" : (dispIdx<0 ? "⏰ 時間切れ…" : "❌ ざんねん…")) +
+      "<br>【解説】" + escapeHtml(res.explanation).replace(/\n/g,"<br>") +
+      '<button class="btn" id="btnNext">' + (idx+1<quizQuestions.length ? "次の問題へ" : "結果を見る") + '</button>';
+    document.getElementById("btnNext").onclick = next;
+  });
+}
+function next(){
+  idx++;
+  if(idx < quizQuestions.length) renderQ(); else finishAndShowResult();
+}
+
+/* ================= 画面: 結果 ================= */
+function finishAndShowResult(){
+  app.innerHTML = '<div class="card loading">採点中…</div>';
+  run("finishQuiz", [me.id, quizTargetDate], function(res){
+    if(!res.ok){ alert(res.error); renderDaySelect(); return; }
+    if(!settings.demo_mode){
+      availableDates.forEach(function(d){ if(d.date === quizTargetDate) d.done = true; });
+    }
+    lastResult = res;
+    if(res.isMakeup){
+      renderResult();
+    } else if(res.results){
+      // P7: finishQuizの戻りにgetResults相当が同梱済みなら1往復で完結
+      lastResultsData = res.results.ok ? res.results : null;
+      renderResult();
+    } else {
+      // フォールバック: results未同梱時（想定外ケース）は従来どおり別途取得
+      run("getResults", [me.id, quizTargetDate], function(rres){
+        lastResultsData = rres.ok ? rres : null;
+        renderResult();
+      }, function(){ lastResultsData = null; renderResult(); });
+    }
+  });
+}
+
+function renderResult(){
+  var gs = lastResult.genreStats || {};
+  var okCnt = 0, allCnt = 0;
+  Object.keys(gs).forEach(function(g){ okCnt += gs[g].ok; allCnt += gs[g].all; });
+  var best = "－", bestRate = -1;
+  Object.keys(gs).forEach(function(g){
+    var r = gs[g].ok/gs[g].all;
+    if(gs[g].ok>0 && r>bestRate){ bestRate=r; best=g; }
+  });
+  var maxScore = 0;
+  quizQuestions.forEach(function(q){ maxScore += ({1:settings.pt_1,2:settings.pt_2,3:settings.pt_3})[q.difficulty] || 0; });
+  maxScore += settings.join_bonus;
+
+  var ranksHtml = "";
+  if(!lastResult.isMakeup && lastResultsData && lastResultsData.myRanks){
+    var mr = lastResultsData.myRanks;
+    ranksHtml =
+     '<div class="card">' +
+       '<h2>あなたの順位（本日集計）</h2>' +
+       '<div class="myrank">' +
+         '<div><div class="num">' + (mr.class.rank||"－") + '<span style="font-size:12px">位</span></div><div class="lbl">クラス内 / ' + (mr.class.n||"-") + '人</div></div>' +
+         '<div><div class="num">' + (mr.course.rank||"－") + '<span style="font-size:12px">位</span></div><div class="lbl">コース内 / ' + (mr.course.n||"-") + '人</div></div>' +
+         '<div><div class="num">' + (mr.grade.rank||"－") + '<span style="font-size:12px">位</span></div><div class="lbl">学年 / ' + (mr.grade.n||"-") + '人</div></div>' +
+       '</div>' +
+       '<div class="note">個人順位はクラス内・コース内・学年内の3軸で、本人にだけ表示されます。</div>' +
+     '</div>';
+  } else if(!lastResult.isMakeup) {
+    ranksHtml = '<div class="card"><div class="note">順位を集計中です。しばらくしてからランキング画面をご覧ください。</div></div>';
+  }
+
+  app.innerHTML =
+   '<div class="card center">' +
+     '<h1>' + (lastResult.isMakeup ? "さかのぼり回答の結果" : "本日の結果") + '</h1>' +
+     '<div class="sub">ID: ' + me.displayName + '</div>' +
+     '<div class="big">' + lastResult.totalScore + '<span style="font-size:18px;color:var(--sub)"> / ' + maxScore + '点</span></div>' +
+     '<div>正解 ' + okCnt + ' / ' + allCnt + ' 問（参加ボーナス +' + lastResult.joinBonus + '点込み）</div>' +
+     (best!=="－" ? '<div class="badge">今日の得意ジャンル: ' + best + '</div>' : "") +
+     (lastResult.isMakeup ? '<div class="note">さかのぼり回答のため得点はランキング対象外です。参加日数と教養レーダーには反映されました。</div>' : "") +
+   '</div>' +
+   ranksHtml +
+   '<div class="card">' +
+     '<h2>ジャンル別 正答率（今日）</h2>' +
+     '<canvas id="radar" width="300" height="240"></canvas>' +
+   '</div>' +
+   '<div class="card">' +
+     '<button class="btn" id="btnToRank">📊 ランキングを見る</button>' +
+     '<button class="btn ghost" id="btnToMyPage">👤 マイページ（推移・ニックネーム変更）</button>' +
+     '<button class="btn ghost" id="btnToStart">最初に戻る</button>' +
+   '</div>';
+  document.getElementById("btnToRank").onclick = function(){ renderRanking("daily"); };
+  document.getElementById("btnToMyPage").onclick = renderMyPage;
+  document.getElementById("btnToStart").onclick = renderDaySelect;
+  drawRadar(gs);
+}
+
+function drawRadar(genreStat){
+  var cv = document.getElementById("radar"); if(!cv) return;
+  var ctx = cv.getContext("2d");
+  var css = getComputedStyle(document.documentElement);
+  var colBorder = css.getPropertyValue("--border").trim();
+  var colSub = css.getPropertyValue("--sub").trim();
+  var colFill = css.getPropertyValue("--chart-fill").trim();
+  var colAcc = css.getPropertyValue("--acc").trim();
+  var genres = Object.keys(genreStat).length ? Object.keys(genreStat) : ["推論","数理","ことば","文脈","読解","資料","英語","教養"];
+  var cx=150, cy=125, R=85, N=genres.length;
+  function pt(i,r){ var a=-Math.PI/2+i*2*Math.PI/N; return [cx+r*Math.cos(a), cy+r*Math.sin(a)]; }
+  ctx.strokeStyle=colBorder; ctx.fillStyle=colSub; ctx.font="12px sans-serif";
+  for(var ring=1; ring<=4; ring++){
+    ctx.beginPath();
+    for(var i=0;i<=N;i++){ var p=pt(i%N, R*ring/4); i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); }
+    ctx.stroke();
+  }
+  genres.forEach(function(g,i){
+    var p=pt(i,R+18);
+    ctx.textAlign="center"; ctx.fillText(g,p[0],p[1]+4);
+  });
+  ctx.beginPath();
+  genres.forEach(function(g,i){
+    var s=genreStat[g], r=s? (s.ok/s.all)*R : 0;
+    var p=pt(i, Math.max(r,4));
+    i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);
+  });
+  ctx.closePath();
+  ctx.fillStyle=colFill; ctx.fill();
+  ctx.strokeStyle=colAcc; ctx.lineWidth=2; ctx.stroke();
+}
+
+/* ================= 画面: ランキング ================= */
+function renderRanking(tab){
+  tab = tab || "daily";
+  app.innerHTML = '<div class="card loading">読み込み中…</div>';
+  if(tab === "daily" || tab === "mycourse" || tab === "myclass"){
+    var d = quizTargetDate || todayStr;
+    var dispDate = (lastResultsData && lastResultsData.date) || d;
+    run("getResults", [me.id, dispDate], function(res){
+      lastResultsData = res.ok ? res : lastResultsData;
+      renderRankingBody(tab);
+    });
+  } else if(tab === "weekly"){
+    run("getWeeklyBoard", [todayStr], function(res){
+      lastWeeklyData = res;
+      renderRankingBody(tab);
+    });
+  } else {
+    renderRankingBody(tab);
+  }
+}
+var lastWeeklyData = null;
+
+function renderRankingBody(tab){
+  var tabsHtml =
+   '<div class="tabs">' +
+     '<button class="tab ' + (tab==='daily'?'on':'') + '" data-tab="daily">デイリー</button>' +
+     '<button class="tab ' + (tab==='weekly'?'on':'') + '" data-tab="weekly">ウィークリー</button>' +
+     '<button class="tab ' + (tab==='mycourse'?'on':'') + '" data-tab="mycourse">マイコース</button>' +
+     '<button class="tab ' + (tab==='myclass'?'on':'') + '" data-tab="myclass">マイクラス</button>' +
+   '</div>';
+
+  var body = "";
+  if(tab === "daily"){
+    var rd = lastResultsData;
+    if(!rd){ body = '<div class="note">まだ集計データがありません。</div>'; }
+    else {
+      var rows = rd.gradeTop.map(function(r){
+        return '<tr' + (r.isMe?' class="me"':'') + '><td>' + r.rank + '</td><td>' + esc(r.name) + '</td><td>' + r.score + '</td></tr>';
+      }).join("");
+      var refRows = (rd.teacherRefs||[]).map(function(t){
+        return '<tr class="refrow"><td>－</td><td>' + esc(t.name) + '（参考）</td><td>' + t.score + '</td></tr>';
+      }).join("");
+      body = '<h2>学年TOP10（' + rd.date + '）</h2>' +
+        '<table><tr><th>順位</th><th>名前</th><th>得点</th></tr>' + rows + refRows + '</table>' +
+        '<div class="note">個人の公開はTOP10まで（同点は含む）。自分の3軸順位は解答後の結果画面にのみ表示されます。</div>';
+      if(rd.lowCorrectQuestions && rd.lowCorrectQuestions.length){
+        body += '<h2 style="margin-top:14px;">正答率が低かった問題</h2>' + rd.lowCorrectQuestions.map(function(q){
+          return '<div class="note" style="margin-bottom:8px;"><b>正答率' + Math.round(q.correctRate*100) + '%</b>：' + esc(q.question_text).split("\n")[0] + '<br>【解説】' + esc(q.explanation) + '</div>';
+        }).join("");
+      }
+    }
+  } else if(tab === "weekly"){
+    var wd = lastWeeklyData;
+    if(!wd || !wd.ok){ body = '<div class="note">まだ集計データがありません。</div>'; }
+    else {
+      var wrows = wd.top20.map(function(r){
+        var isMe = r.student_id === me.id;
+        return '<tr' + (isMe?' class="me"':'') + '><td>' + r.rank + '</td><td>' + esc(r.name) + '</td><td>' + r.score + '点(' + r.days + '日)</td></tr>';
+      }).join("");
+      var wref = (wd.teacherRefs||[]).map(function(t){
+        return '<tr class="refrow"><td>－</td><td>' + esc(t.name) + '（参考）</td><td>' + t.score + '点(' + t.days + '日)</td></tr>';
+      }).join("");
+      body = '<h2>今週の合計TOP20（' + wd.weekStart + '〜・同点は含む）</h2>' +
+        '<table><tr><th>順位</th><th>名前</th><th>週合計(参加日数)</th></tr>' + wrows + wref + '</table>';
+    }
+  } else if(tab === "mycourse"){
+    var rd3 = lastResultsData;
+    if(!rd3){ body = '<div class="note">まだ集計データがありません。</div>'; }
+    else {
+      var list = (rd3.myCourseTop || []);
+      var crows2 = list.map(function(r){
+        if(r.isRef) return '<tr class="refrow"><td>－</td><td>' + esc(r.name) + '（参考）</td><td>' + r.score + '</td></tr>';
+        return '<tr' + (r.isMe?' class="me"':'') + '><td>' + r.rank + '</td><td>' + esc(r.name) + '</td><td>' + r.score + '</td></tr>';
+      }).join("");
+      body = '<h2>あなたのコース TOP10</h2><table><tr><th>順位</th><th>名前</th><th>得点</th></tr>' + crows2 + '</table>';
+    }
+  } else if(tab === "myclass"){
+    var rd4 = lastResultsData;
+    if(!rd4){ body = '<div class="note">まだ集計データがありません。</div>'; }
+    else {
+      var crows3 = (rd4.myClassTop || []).map(function(r){
+        if(r.isRef) return '<tr class="refrow"><td>－</td><td>' + esc(r.name) + '（参考）</td><td>' + r.score + '</td></tr>';
+        return '<tr' + (r.isMe?' class="me"':'') + '><td>' + r.rank + '</td><td>' + esc(r.name) + '</td><td>' + r.score + '</td></tr>';
+      }).join("");
+      body = '<h2>あなたのクラス TOP10</h2><table><tr><th>順位</th><th>名前</th><th>得点</th></tr>' + crows3 + '</table>';
+    }
+  }
+
+  app.innerHTML =
+   '<div class="card">' +
+     '<h1>📊 ランキング発表</h1>' +
+     '<div class="sub">毎朝、前日分を自動集計して発表</div>' +
+     tabsHtml +
+     body +
+     '<div class="note">教員IDは「参考」として表示されます（生徒の順位計算からは除外）。</div>' +
+     '<button class="btn ghost" id="btnBackDay">最初に戻る</button>' +
+   '</div>';
+  Array.prototype.forEach.call(document.querySelectorAll(".tab[data-tab]"), function(b){
+    b.onclick = function(){ renderRanking(b.getAttribute("data-tab")); };
+  });
+  document.getElementById("btnBackDay").onclick = renderDaySelect;
+}
+
+/* ================= 画面: マイページ ================= */
+function renderMyPage(){
+  app.innerHTML = '<div class="card loading">読み込み中…</div>';
+  run("getMyPage", [me.id], function(res){
+    if(!res.ok){ alert(res.error); renderDaySelect(); return; }
+    var weekRows = res.weekTrend.map(function(w){ return '<tr><td>' + w.date + (w.isMakeup?"(さ)":"") + '</td><td>' + w.score + '点</td></tr>'; }).join("");
+    var monthRows = res.monthTrend.map(function(w){ return '<tr><td>' + w.date + (w.isMakeup?"(さ)":"") + '</td><td>' + w.score + '点</td></tr>'; }).join("");
+    app.innerHTML =
+     '<div class="card">' +
+       '<h1>👤 マイページ</h1>' +
+       '<div class="sub">' + esc(res.student.displayName) + '（ID: ' + res.student.id + '）</div>' +
+       '<label>ニックネーム変更</label>' +
+       '<input type="text" id="nick2" maxlength="10" value="' + esc(res.student.nickname||"") + '" placeholder="未設定（IDが表示されます）">' +
+       '<div class="err" id="nick2Err"></div>' +
+       '<button class="btn small" id="btnSaveNick">保存する</button>' +
+       '<div class="note">空欄で保存するとIDが表示名に戻ります。</div>' +
+     '</div>' +
+     '<div class="card">' +
+       '<h2>参加日数（さかのぼり含む）</h2>' +
+       '<div class="big" style="font-size:32px;">' + res.participationDays + '<span style="font-size:14px;color:var(--sub)"> 日</span></div>' +
+     '</div>' +
+     '<div class="card">' +
+       '<h2>教養レーダー（ジャンル別 正答率・全期間）</h2>' +
+       '<canvas id="radar2" width="300" height="240"></canvas>' +
+     '</div>' +
+     '<div class="card">' +
+       '<h2>今週の推移</h2>' +
+       '<table><tr><th>日付</th><th>得点</th></tr>' + (weekRows||'<tr><td colspan=2 class="note">データなし</td></tr>') + '</table>' +
+     '</div>' +
+     '<div class="card">' +
+       '<h2>今月の推移</h2>' +
+       '<table><tr><th>日付</th><th>得点</th></tr>' + (monthRows||'<tr><td colspan=2 class="note">データなし</td></tr>') + '</table>' +
+     '</div>' +
+     '<div class="card"><button class="btn ghost" id="btnBack2">最初に戻る</button></div>';
+    drawRadar(res.genreStats);
+    document.getElementById("btnBack2").onclick = renderDaySelect;
+    document.getElementById("btnSaveNick").onclick = function(){
+      var nick = document.getElementById("nick2").value.trim();
+      run("setNickname", [me.id, nick], function(r){
+        if(!r.ok){ document.getElementById("nick2Err").textContent = r.error; document.getElementById("nick2Err").style.display="block"; return; }
+        me.nickname = nick; me.displayName = r.displayName;
+        alert("表示名を更新しました: " + r.displayName);
+        renderMyPage();
+      });
+    };
+  });
+}
+
+/* ================= util ================= */
+function escapeHtml(s){
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function esc(s){ return escapeHtml(s); }
+
+/** passage文字列をHTMLへ変換する。
+ *  行頭が「|」の連続行は表として描画（1行目をヘッダー扱い）。それ以外の行は<br>区切りのテキスト。
+ *  例: |クラス|人数|\n|1組|32| → 2列の表 */
+function passageToHtml(p){
+  var lines = String(p||"").split("\n");
+  var html = "", tableRows = [], textBuf = [];
+  function flushText(){
+    if(textBuf.length){ html += textBuf.map(escapeHtml).join("<br>"); textBuf = []; }
+  }
+  function flushTable(){
+    if(!tableRows.length) return;
+    var t = '<table class="ptable">';
+    tableRows.forEach(function(cells, ri){
+      var tag = (ri === 0) ? "th" : "td";
+      t += "<tr>" + cells.map(function(c){ return "<" + tag + ">" + escapeHtml(c) + "</" + tag + ">"; }).join("") + "</tr>";
+    });
+    t += "</table>";
+    html += t;
+    tableRows = [];
+  }
+  lines.forEach(function(line){
+    if(/^\s*\|/.test(line)){
+      flushText();
+      var cells = line.replace(/^\s*\|/, "").replace(/\|\s*$/, "").split("|").map(function(c){ return c.trim(); });
+      tableRows.push(cells);
+    }else{
+      flushTable();
+      textBuf.push(line);
+    }
+  });
+  flushText(); flushTable();
+  return html;
+}
+
+renderStart();
+</script>
+</body>
+</html>
